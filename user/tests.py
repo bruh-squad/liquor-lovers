@@ -9,7 +9,7 @@ User = get_user_model()
 
 class UserTests(APITestCase):
     def test_create_user(self):
-        url = '/user/'
+        url = '/users/'
 
         # need all properties
         data = {'email': 'email'}
@@ -19,7 +19,14 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.count(), 0)
 
         # check password strength
-        data = {'email': 'email@email.com', 'password': 'password'}
+        data = {'email': 'email@email.com', 'password': 'password', 'date_of_birth': '2000-01-01'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+        # check age
+        data = {'email': 'email@email.com', 'password': 'password', 'date_of_birth': '2018-01-01'}
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -52,7 +59,7 @@ class UserTests(APITestCase):
                                  password='Password1234$!',
                                  date_of_birth=datetime.date(2000, 1, 1))
 
-        url = '/user/'
+        url = '/users/'
 
         # need all properties
         data = {'date_of_birth': '2001-01-01'}
@@ -70,7 +77,7 @@ class UserTests(APITestCase):
                                         password='Password1234$!',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
-        url = '/user/'
+        url = '/users/'
 
         jwt = self.client.post('/auth/token/',
                                {'email': 'email@email.com', 'password': 'Password1234$!'},
@@ -86,7 +93,7 @@ class UserTests(APITestCase):
                                         password='Password1234$!',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
-        url = f'/user/{user.public_id}/'
+        url = f'/users/{user.public_id}/'
 
         response = self.client.get(url, format='json')
         self.assertIsNone(response.data.get('email'))
@@ -99,7 +106,7 @@ class UserTests(APITestCase):
                                  password='Password1234$!',
                                  date_of_birth=datetime.date(2000, 1, 1))
 
-        url = '/user/'
+        url = '/users/'
 
         jwt = self.client.post('/auth/token/',
                                {'email': 'email@email.com', 'password': 'Password1234$!'},

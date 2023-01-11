@@ -1,5 +1,8 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext as _
+from django.contrib.auth.password_validation import validate_password
+
+from friend.models import FriendsList
 
 
 class CustomUserManager(BaseUserManager):
@@ -17,11 +20,17 @@ class CustomUserManager(BaseUserManager):
         if not date_of_birth:
             raise ValueError(_('The Date of Birth must be set'))
 
+        validate_password(password)
+
         email = self.normalize_email(email)
         user = self.model(email=email, date_of_birth=date_of_birth, **extra_fields)
 
         user.set_password(password)
         user.save()
+
+        friends_list = FriendsList(user=user)
+        friends_list.save()
+
         return user
 
     def create_superuser(self, email, password, **extra_fields):

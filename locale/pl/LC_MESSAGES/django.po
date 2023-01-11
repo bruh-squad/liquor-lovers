@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-08 20:09+0100\n"
+"POT-Creation-Date: 2023-01-11 10:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,18 +20,38 @@ msgstr ""
 "(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: LiquorLovers/settings.py:129
+#: LiquorLovers/settings.py:151
 msgid "English"
 msgstr "Angielski"
 
-#: LiquorLovers/settings.py:130
+#: LiquorLovers/settings.py:152
 msgid "Polish"
 msgstr "Polski"
 
-#: user/managers.py:15
+#: friend/serializers.py:46
+msgid "Invitation like this already exists"
+msgstr "Takie zaproszenie już istnieje"
+
+#: friend/serializers.py:52
+msgid "The receiver already invited you"
+msgstr "Ten użytkownik już cię zaprosił"
+
+#: friend/serializers.py:55
+msgid "You can not invite yourself"
+msgstr "Nie możesz zaprosić siebie"
+
+#: friend/views.py:30
+msgid "This user is not your friend"
+msgstr "Ten użytkowników nie jest twom znajomym"
+
+#: user/managers.py:18
 msgid "The Email must be set"
 msgstr "Email musi zostać ustawiony"
 
-#: user/managers.py:18
+#: user/managers.py:21
 msgid "The Date of Birth must be set"
 msgstr "Data urodzenia musi być ustawiona"
+
+#: user/serializers.py:52
+msgid "The user must be an adult"
+msgstr "Użytkownik musi być dorosły"

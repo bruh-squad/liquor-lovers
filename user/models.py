@@ -3,18 +3,15 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from LiquorLovers.utils import uuid_upload_to
 from user.managers import CustomUserManager
 
 
 class User(AbstractUser):
     public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(blank=False)
     email = models.EmailField(unique=True)
-    pfp = models.ImageField(upload_to='pfps/',
-                            default='defaults/pfps/default.png',
-                            # height_field=512,
-                            # width_field=512
-                            )
+    pfp = models.ImageField(upload_to=uuid_upload_to('pfp'), default='defaults/pfps/default.png')
 
     username = None
 

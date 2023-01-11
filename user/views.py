@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 
-from .serializers import UserSerializer, FriendSerializer
+from .serializers import UserSerializer
+from friend.serializers import FriendSerializer
 
 
 User = get_user_model()

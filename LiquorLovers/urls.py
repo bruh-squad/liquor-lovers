@@ -15,11 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from LiquorLovers import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/token/', TokenObtainPairView.as_view()),
-    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user/', include('user.urls')),
+    path('auth/token/refresh/', TokenRefreshView.as_view()),
+    path('users/', include('user.urls')),
+    path('friends/', include('friend.urls')),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
