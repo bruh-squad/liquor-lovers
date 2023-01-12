@@ -16,17 +16,26 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the creation of a new user.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        Retrieves the current user's information.
+        """
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET'])
     def retrieve_other(self, request, *args, **kwargs):
+        """
+        Retrieves information for a user specified by public_id.
+        """
         user = self.get_object()
 
         if user is None:
@@ -36,18 +45,27 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
+        """
+        Handles the updating of the current user's information.
+        """
         serializer = self.get_serializer(request.user, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
 
     def partial_update(self, request, *args, **kwargs):
+        """
+        Handles partial updating of the current user's information.
+        """
         serializer = self.get_serializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles deletion of the current user's account.
+        """
         self.perform_destroy(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 

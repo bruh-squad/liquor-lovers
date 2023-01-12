@@ -19,11 +19,17 @@ class FriendViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
+        """
+        Retrieves the list of friends for the current user.
+        """
         queryset = request.user.friends_list.friends
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Removes a friend from the current user's friend list.
+        """
         friend = self.get_object()
 
         if not request.user.friends_list.is_friend(friend):
@@ -41,24 +47,36 @@ class InvitationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        """
+        Handles the creation of a new friend invitation.
+        """
         serializer = self.get_serializer(data=request.data | {'sender_public_id': request.user.public_id})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
+        """
+        Retrieves the list of friend invitations for the current user.
+        """
         queryset = self.get_queryset().filter(receiver=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
     def list_from_me(self, request, *args, **kwargs):
+        """
+        Retrieves the list of friend invitations sent by the current user.
+        """
         queryset = self.get_queryset().filter(sender=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['POST'])
     def accept(self, request, *args, **kwargs):
+        """
+        Handles the acceptance of a friend invitation by the current user.
+        """
         invitation = self.get_object()
 
         if request.user != invitation.receiver:
@@ -68,6 +86,9 @@ class InvitationViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles the rejection of a friend invitation.
+        """
         invitation = self.get_object()
 
         if request.user not in [invitation.sender, invitation.receiver]:
