@@ -28,6 +28,7 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view()),
     path('users/', include('user.urls')),
     path('friends/', include('friend.urls')),
+    path('parties/', include('party.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-11 10:32+0000\n"
+"POT-Creation-Date: 2023-01-24 19:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,11 +20,11 @@ msgstr ""
 "(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: LiquorLovers/settings.py:151
+#: LiquorLovers/settings.py:155
 msgid "English"
 msgstr "Angielski"
 
-#: LiquorLovers/settings.py:152
+#: LiquorLovers/settings.py:156
 msgid "Polish"
 msgstr "Polski"
 
@@ -40,9 +40,25 @@ msgstr "Ten użytkownik już cię zaprosił"
 msgid "You can not invite yourself"
 msgstr "Nie możesz zaprosić siebie"
 
-#: friend/views.py:30
+#: friend/views.py:36
 msgid "This user is not your friend"
 msgstr "Ten użytkowników nie jest twom znajomym"
+
+#: party/models.py:12
+msgid "Private"
+msgstr "Prywatna"
+
+#: party/models.py:13
+msgid "Public"
+msgstr "Publiczna"
+
+#: party/models.py:14
+msgid "Secret"
+msgstr "Sekretna"
+
+#: party/serializers.py:39
+msgid "Stop time must occur after start time"
+msgstr "Czas zakończenia musi nastąpić po czasie rozpoczęcia"
 
 #: user/managers.py:18
 msgid "The Email must be set"

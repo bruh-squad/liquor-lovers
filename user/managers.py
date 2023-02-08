@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext as _
 from django.contrib.auth.password_validation import validate_password
 
+from LiquorLovers import settings
 from friend.models import FriendsList
 
 
@@ -20,7 +21,8 @@ class CustomUserManager(BaseUserManager):
         if not date_of_birth:
             raise ValueError(_('The Date of Birth must be set'))
 
-        validate_password(password)
+        if not settings.DEBUG:
+            validate_password(password)
 
         email = self.normalize_email(email)
         user = self.model(email=email, date_of_birth=date_of_birth, **extra_fields)
