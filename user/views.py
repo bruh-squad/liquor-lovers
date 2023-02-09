@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 
-from .serializers import UserSerializer
+from .serializers import UserSerializer, CreateUserSerializer
 from friend.serializers import FriendSerializer
 
 
@@ -79,4 +79,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve_other':
             return FriendSerializer
+        elif self.action == 'create':
+            return CreateUserSerializer
         return UserSerializer

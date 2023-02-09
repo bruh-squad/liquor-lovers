@@ -1,12 +1,14 @@
 import datetime
 from uuid import uuid4
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext as _
 from PIL import Image
+from rest_framework.validators import UniqueValidator
 
 from friend.serializers import FriendSerializer
 
@@ -18,7 +20,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['public_id', 'email', 'first_name', 'last_name', 'date_of_birth', 'pfp', 'friends', 'password']
+        fields = ['public_id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'date_of_birth',
+                  'pfp',
+                  'friends',
+                  'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def save(self, **kwargs):
@@ -51,3 +61,26 @@ class UserSerializer(serializers.ModelSerializer):
         if datetime.date.today() - date_of_birth < datetime.timedelta(days=18 * 365):
             raise serializers.ValidationError(_('The user must be an adult'))
         return date_of_birth
+
+
+class CreateUserSerializer(UserSerializer):
+    email = serializers.EmailField(validators=[UniqueValidator(User.objects.all())])
+    username = serializers.CharField(max_length=150,
+                                     validators=[UniqueValidator(User.objects.all())])
+
+    class Meta:
+        model = User
+        fields = ['public_id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'date_of_birth',
+                  'pfp',
+                  'friends',
+                  'password']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'username': {'read_only': False},
+            'email': {'read_only': False}
+        }

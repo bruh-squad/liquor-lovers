@@ -11,7 +11,7 @@ User = get_user_model()
 class FriendSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['public_id', 'first_name', 'last_name', 'date_of_birth', 'pfp']
+        fields = ['public_id', 'username', 'first_name', 'last_name', 'date_of_birth', 'pfp']
         read_only_fields = ('public_id', 'first_name', 'last_name', 'date_of_birth', 'pfp')
 
 

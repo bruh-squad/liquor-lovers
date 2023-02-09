@@ -16,6 +16,7 @@ class PartyTest(APITestCase):
         url = '/parties/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
@@ -45,10 +46,12 @@ class PartyTest(APITestCase):
         url = '/parties/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
         party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
                                               password='Password&1976',
                                               date_of_birth=datetime.date(2000, 1, 1))
 
@@ -110,10 +113,12 @@ class PartyTest(APITestCase):
         url = '/parties/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
         party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
                                               password='Password&1976',
                                               date_of_birth=datetime.date(2000, 1, 1))
 
@@ -152,10 +157,12 @@ class PartyTest(APITestCase):
         url = '/parties/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
         party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
                                               password='Password&1976',
                                               date_of_birth=datetime.date(2000, 1, 1))
 
@@ -186,6 +193,7 @@ class PartyTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Party.objects.count(), 1)
 
-        response = self.client.delete(f'{url}{public_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}', follow=True)
+        response = self.client.delete(f'{url}{public_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}',
+                                      follow=True)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Party.objects.count(), 1)

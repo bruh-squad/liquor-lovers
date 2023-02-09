@@ -14,14 +14,17 @@ class FriendTest(APITestCase):
         url = '/friends/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
         friend = User.objects.create_user(email='friend@friend.com',
+                                          username='friend',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         friend1 = User.objects.create_user(email='friend1@friend1.com',
+                                           username='friend1',
                                            password='Password&1976',
                                            date_of_birth=datetime.date(2000, 1, 1))
 
@@ -44,14 +47,17 @@ class FriendTest(APITestCase):
         url = '/friends/'
 
         user = User.objects.create_user(email='user@user.com',
+                                        username='username',
                                         password='Password&1976',
                                         date_of_birth=datetime.date(2000, 1, 1))
 
         friend = User.objects.create_user(email='friend@friend.com',
+                                          username='friend',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         friend1 = User.objects.create_user(email='friend1@friend1.com',
+                                           username='friend1',
                                            password='Password&1976',
                                            date_of_birth=datetime.date(2000, 1, 1))
 
@@ -77,10 +83,12 @@ class InvitationTests(APITestCase):
         url = '/friends/invitations/'
 
         sender = User.objects.create_user(email='sender@sender.com',
+                                          username='sender',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         receiver = User.objects.create_user(email='receiver@receiver.com',
+                                            username='receiver',
                                             password='Password&1976',
                                             date_of_birth=datetime.date(2000, 1, 1))
 
@@ -97,10 +105,12 @@ class InvitationTests(APITestCase):
         url = '/friends/invitations/my/'
 
         sender = User.objects.create_user(email='sender@sender.com',
+                                          username='sender',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         receiver = User.objects.create_user(email='receiver@receiver.com',
+                                            username='receiver',
                                             password='Password&1976',
                                             date_of_birth=datetime.date(2000, 1, 1))
 
@@ -117,10 +127,12 @@ class InvitationTests(APITestCase):
         url = '/friends/invitations/'
 
         sender = User.objects.create_user(email='sender@sender.com',
+                                          username='sender',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         receiver = User.objects.create_user(email='receiver@receiver.com',
+                                            username='receiver',
                                             password='Password&1976',
                                             date_of_birth=datetime.date(2000, 1, 1))
 
@@ -159,10 +171,12 @@ class InvitationTests(APITestCase):
         url = '/friends/invitations/'
 
         sender = User.objects.create_user(email='sender@sender.com',
+                                          username='sender',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         receiver = User.objects.create_user(email='receiver@receiver.com',
+                                            username='receiver',
                                             password='Password&1976',
                                             date_of_birth=datetime.date(2000, 1, 1))
 
@@ -190,10 +204,12 @@ class InvitationTests(APITestCase):
         url = '/friends/invitations/'
 
         sender = User.objects.create_user(email='sender@sender.com',
+                                          username='sender',
                                           password='Password&1976',
                                           date_of_birth=datetime.date(2000, 1, 1))
 
         receiver = User.objects.create_user(email='receiver@receiver.com',
+                                            username='receiver',
                                             password='Password&1976',
                                             date_of_birth=datetime.date(2000, 1, 1))
 
