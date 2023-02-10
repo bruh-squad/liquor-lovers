@@ -153,6 +153,62 @@ class PartyTest(APITestCase):
                                    HTTP_AUTHORIZATION=f'Bearer {jwt}', follow=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_update_party(self):
+        url = '/parties/'
+
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party = Party.objects.create(name='public_party name',
+                                     owner=user,
+                                     description='public_party description',
+                                     privacy_status=Party.PrivacyStatus.PUBLIC,
+                                     localization='POINT(12 12)',
+                                     start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                  tzinfo=timezone.utc),
+                                     stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                 tzinfo=timezone.utc))
+        party.participants.add(user)
+        party.save()
+
+        data = {'email': user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.patch(f'{url}{private_party.public_id}/',
+                                     data,
+                                     format='json',
+                                     HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        data = {'name': 'new_name', 'privacy_status': 3, 'description': 'new_description'}
+        response = self.client.patch(f'{url}{party.public_id}/',
+                                     data,
+                                     format='json',
+                                     HTTP_AUTHORIZATION=f'Bearer {jwt}')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'new_name')
+        self.assertEqual(response.data['privacy_status'], 3)
+        self.assertEqual(response.data['privacy_status_display'], 'Secret')
+        self.assertEqual(response.data['description'], 'new_description')
+
     def test_delete_party(self):
         url = '/parties/'
 

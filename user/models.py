@@ -12,7 +12,7 @@ class User(AbstractUser):
     public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     date_of_birth = models.DateField(blank=False)
     email = models.EmailField(unique=True, editable=False)
-    pfp = models.ImageField(upload_to=uuid_upload_to('pfp'), default='defaults/pfps/default.png')
+    pfp = models.ImageField(upload_to=uuid_upload_to('pfps'), default='defaults/pfps/default.png')
     username = models.CharField(null=False,
                                 blank=False,
                                 max_length=150,

@@ -53,6 +53,25 @@ class PartyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def update(self, request, *args, **kwargs):
+        if self.get_object().owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        data = request.data | {'owner_public_id': request.user.public_id}
+        serializer = self.get_serializer(self.get_object(), data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        if self.get_object().owner != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def destroy(self, request, *args, **kwargs):
         """
         Deletes an existing party object if the user is the owner.

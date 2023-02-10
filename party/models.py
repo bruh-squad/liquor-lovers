@@ -4,6 +4,8 @@ from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext as _
 
+from LiquorLovers.utils import uuid_upload_to
+
 User = get_user_model()
 
 
@@ -18,6 +20,7 @@ class Party(models.Model):
     name = models.TextField(max_length=100)
     privacy_status = models.IntegerField(choices=PrivacyStatus.choices, default=PrivacyStatus.PRIVATE)
     description = models.TextField(max_length=500)
+    image = models.ImageField(upload_to=uuid_upload_to('parties'), default='defaults/parties/default.png')
     participants = models.ManyToManyField(User, related_name='parties')
     localization = models.PointField(null=False, blank=False)
     start_time = models.DateTimeField()
@@ -34,3 +37,9 @@ class Party(models.Model):
             return self.owner.friends_list.is_friend(user) or user == self.owner
 
         return True
+
+    def delete(self, using=None, keep_parents=False):
+        if self.image.name != self.image.field.default:
+            self.image.delete()
+
+        return super().delete(using, keep_parents)

@@ -27,6 +27,7 @@ class PartySerializer(serializers.ModelSerializer):
                   'privacy_status',
                   'privacy_status_display',
                   'description',
+                  'image',
                   'participants',
                   'localization',
                   'start_time',
@@ -41,10 +42,13 @@ class PartySerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def validate(self, data):
-        if self.instance is not None and data['owner'] not in data['participants']:
+        if self.instance is not None and \
+                (data.get('owner') or self.instance.owner) not in \
+                data.get('participants', self.instance.participants.all()):
             raise serializers.ValidationError(_('You can not remove yourself from participant list'))
 
-        if data['start_time'] > data['stop_time']:
-            raise serializers.ValidationError(_('Stop time must occur after start time'))
+        if data.get('start_time') is not None or data.get('stop_time') is not None:
+            if data.get('start_time') > data.get('stop_time'):
+                raise serializers.ValidationError(_('Stop time must occur after start time'))
 
         return data
