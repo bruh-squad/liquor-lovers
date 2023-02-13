@@ -38,8 +38,28 @@ class Party(models.Model):
 
         return True
 
+    def add_participant(self, participant):
+        self.participants.add(participant)
+        self.save()
+
     def delete(self, using=None, keep_parents=False):
         if self.image.name != self.image.field.default:
             self.image.delete()
 
         return super().delete(using, keep_parents)
+
+
+class PartyInvitation(models.Model):
+    party = models.ForeignKey(Party, related_name='invitations', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='party_invitations', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True, editable=False)
+
+    def __str__(self):
+        return f'Invitation to {self.party.name} to {self.receiver.username}'
+
+    def accept(self):
+        self.party.add_participant(self.receiver)
+        self.delete()
+
+    def reject(self):
+        self.delete()

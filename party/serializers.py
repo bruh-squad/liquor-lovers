@@ -3,7 +3,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from user.serializers import FriendSerializer
-from .models import Party
+from .models import Party, PartyInvitation
 
 User = get_user_model()
 
@@ -45,10 +45,26 @@ class PartySerializer(serializers.ModelSerializer):
         if self.instance is not None and \
                 (data.get('owner') or self.instance.owner) not in \
                 data.get('participants', self.instance.participants.all()):
-            raise serializers.ValidationError(_('You can not remove yourself from participant list'))
+            raise serializers.ValidationError(_('You can not remove yourself from participant list. '))
 
         if data.get('start_time') is not None or data.get('stop_time') is not None:
             if data.get('start_time') > data.get('stop_time'):
-                raise serializers.ValidationError(_('Stop time must occur after start time'))
+                raise serializers.ValidationError(_('Stop time must occur after start time. '))
 
         return data
+
+
+class PartyInvitationSerializer(serializers.ModelSerializer):
+    party = PartySerializer(read_only=True)
+    party_public_id = serializers.SlugRelatedField(
+        source='party', queryset=Party.objects.all(), slug_field='public_id', write_only=True
+    )
+
+    receiver = FriendSerializer(read_only=True)
+    receiver_public_id = serializers.SlugRelatedField(
+        source='receiver', queryset=User.objects.all(), slug_field='public_id', write_only=True
+    )
+
+    class Meta:
+        model = PartyInvitation
+        fields = ['party', 'party_public_id', 'receiver', 'receiver_public_id']

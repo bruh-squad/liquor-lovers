@@ -43,15 +43,15 @@ class FriendInvitationSerializer(serializers.ModelSerializer):
                                                      receiver=attrs['receiver'])
 
         if invitation.exists():
-            raise serializers.ValidationError(_('Invitation like this already exists'))
+            raise serializers.ValidationError(_('Invitation like this already exists. '))
 
         invitation = FriendInvitation.objects.filter(receiver=attrs['sender'],
                                                      sender=attrs['receiver'])
 
         if invitation.exists():
-            raise serializers.ValidationError(_('The receiver already invited you'))
+            raise serializers.ValidationError(_('The receiver already invited you. '))
 
         if attrs['sender'] == attrs['receiver']:
-            raise serializers.ValidationError(_('You can not invite yourself'))
+            raise serializers.ValidationError(_('You can not invite yourself. '))
 
         return attrs

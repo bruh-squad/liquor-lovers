@@ -59,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_date_of_birth(self, date_of_birth):
         if datetime.date.today() - date_of_birth < datetime.timedelta(days=18 * 365):
-            raise serializers.ValidationError(_('The user must be an adult'))
+            raise serializers.ValidationError(_('The user must be an adult. '))
         return date_of_birth
 
 

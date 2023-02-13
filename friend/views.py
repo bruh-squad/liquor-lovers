@@ -33,7 +33,7 @@ class FriendViewSet(viewsets.ModelViewSet):
         friend = self.get_object()
 
         if not request.user.friends_list.is_friend(friend):
-            return Response({'detail': _('This user is not your friend')}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': _('This user is not your friend. ')}, status=status.HTTP_400_BAD_REQUEST)
 
         request.user.friends_list.remove_friend(friend)
 
@@ -80,7 +80,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
         invitation = self.get_object()
 
         if request.user != invitation.receiver:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         invitation.accept()
         return Response(status=status.HTTP_201_CREATED)
