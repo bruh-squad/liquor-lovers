@@ -3,7 +3,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from user.serializers import FriendSerializer
-from .models import Party, PartyInvitation
+from .models import Party, PartyInvitation, PartyRequest
 
 User = get_user_model()
 
@@ -67,4 +67,32 @@ class PartyInvitationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartyInvitation
-        fields = ['party', 'party_public_id', 'receiver', 'receiver_public_id']
+        fields = ['party', 'party_public_id', 'receiver', 'receiver_public_id', 'created_at']
+
+    def validate(self, attrs):
+        if attrs['receiver'] in attrs['party'].participants.all():
+            raise serializers.ValidationError(_('User is already party participant. '))
+
+        return attrs
+
+
+class PartyRequestSerializer(serializers.ModelSerializer):
+    party = PartySerializer(read_only=True)
+    party_public_id = serializers.SlugRelatedField(
+        source='party', queryset=Party.objects.all(), slug_field='public_id', write_only=True
+    )
+
+    sender = FriendSerializer(read_only=True)
+    sender_public_id = serializers.SlugRelatedField(
+        source='sender', queryset=User.objects.all(), slug_field='public_id', write_only=True
+    )
+
+    class Meta:
+        model = PartyRequest
+        fields = ['party', 'party_public_id', 'sender', 'sender_public_id', 'created_at']
+
+    def validate(self, attrs):
+        if attrs['sender'] in attrs['party'].participants.all():
+            raise serializers.ValidationError(_('User is already party participant. '))
+
+        return attrs

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 
-from .serializers import PartySerializer, PartyInvitationSerializer
-from .models import Party, PartyInvitation
+from .serializers import PartySerializer, PartyInvitationSerializer, PartyRequestSerializer
+from .models import Party, PartyInvitation, PartyRequest
 
 User = get_user_model()
 
@@ -104,7 +104,7 @@ class PartyInvitationViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Handles creation of party invitation or accepting party invitation.
+        Handles creation of party invitation.
         """
         party = self.get_party()
 
@@ -162,6 +162,80 @@ class PartyInvitationViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         self.perform_destroy(invitation)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_party(self):
+        return get_object_or_404(Party, public_id=self.kwargs['party_public_id'])
+
+
+class PartyRequestViewSet(viewsets.ModelViewSet):
+    lookup_field = 'pk'
+    queryset = PartyRequest.objects.all()
+    serializer_class = PartyRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        """
+        Handles creation of party request.
+        """
+        party = self.get_party()
+
+        if not party.can_see_party(request.user):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(data=request.data | {'party_public_id': party.public_id,
+                                                              'sender_public_id': request.user.public_id})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['POST'])
+    def accept(self, request, *args, **kwargs):
+        """
+        Handles the acceptance of a party request.
+        """
+        party = self.get_party()
+        party_request = self.get_object()
+
+        if request.user != party.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        party_request.accept()
+        return Response(status=status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+        """
+        Retrieves the list of party requests for the party.
+        """
+        party = self.get_party()
+
+        if request.user != party.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        queryset = self.get_queryset().filter(party=party)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def list_mine(self, request, *args, **kwargs):
+        """
+        Retrieves the list of party invitations for the current user.
+        """
+        queryset = self.get_queryset().filter(sender=request.user)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Handles deletion of party invitation.
+        """
+        party_request = self.get_object()
+        party = self.get_party()
+
+        if request.user not in [party.owner, party_request.sender]:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        self.perform_destroy(party_request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_party(self):

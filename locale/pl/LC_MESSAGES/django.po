@@ -64,6 +64,10 @@ msgstr "Nie możesz usunąć się z listy uczestników."
 msgid "Stop time must occur after start time. "
 msgstr "Czas zatrzymania musi nastąpić po czasie rozpoczęcia."
 
+#: party/serializers.py:74
+msgid "User is already party participant. "
+msgstr "Użytkownik jest już uczestnikiem imprezy"
+
 #: user/managers.py:19
 msgid "The Email must be set. "
 msgstr "E-mail musi być ustawiony."

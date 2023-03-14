@@ -63,3 +63,19 @@ class PartyInvitation(models.Model):
 
     def reject(self):
         self.delete()
+
+
+class PartyRequest(models.Model):
+    party = models.ForeignKey(Party, related_name='requests', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, related_name='party_requests', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True, editable=False)
+
+    def __str__(self):
+        return f'Request from {self.user.username} to {self.party.name}'
+
+    def accept(self):
+        self.party.add_participant(self.sender)
+        self.delete()
+
+    def reject(self):
+        self.delete()

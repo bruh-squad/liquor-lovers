@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Party, PartyInvitation
+from .models import Party, PartyInvitation, PartyRequest
 
 User = get_user_model()
 
@@ -467,3 +467,216 @@ class PartyInvitationTest(APITestCase):
         self.assertEqual(PartyInvitation.objects.count(), 0)
         self.assertFalse(user in private_party.participants.all())
 
+
+class PartyRequestTest(APITestCase):
+    URL = '/parties/requests/'
+
+    def test_send_request(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+        public_party = Party.objects.create(name='public_party name',
+                                            owner=party_user,
+                                            description='private_party description',
+                                            privacy_status=Party.PrivacyStatus.PUBLIC,
+                                            localization='POINT(12 12)',
+                                            start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                         tzinfo=timezone.utc),
+                                            stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                        tzinfo=timezone.utc))
+
+        data = {'email': user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.post(f'{self.URL}{private_party.public_id}/',
+                                    format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(PartyRequest.objects.count(), 0)
+        
+        response = self.client.post(f'{self.URL}{public_party.public_id}/',
+                                    format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(PartyRequest.objects.count(), 1)
+
+    def test_list_requests(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party_request = PartyRequest.objects.create(party=private_party, sender=user)
+
+        data = {'email': user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.get(self.URL, HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_list_party_request(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party_request = PartyRequest.objects.create(party=private_party, sender=user)
+
+        data = {'email': user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.get(f'{self.URL}{private_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        data = {'email': party_user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.get(f'{self.URL}{private_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_accept_request(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party_request = PartyRequest.objects.create(party=private_party, sender=user)
+
+        data = {'email': party_user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.post(f'{self.URL}{private_party.public_id}/{party_request.pk}/',
+                                    HTTP_AUTHORIZATION=f'Bearer {jwt}', follow=True)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(PartyInvitation.objects.count(), 0)
+        self.assertTrue(user in private_party.participants.all())
+
+    def test_decline_request(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
+                                                                          minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party_request = PartyRequest.objects.create(party=private_party, sender=user)
+
+        data = {'email': party_user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.delete(f'{self.URL}{private_party.public_id}/{party_request.pk}/',
+                                      HTTP_AUTHORIZATION=f'Bearer {jwt}', follow=True)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(PartyInvitation.objects.count(), 0)
+        self.assertFalse(user in private_party.participants.all())
+
+    def test_cancel_request(self):
+        user = User.objects.create_user(email='user@user.com',
+                                        username='username',
+                                        password='Password&1976',
+                                        date_of_birth=datetime.date(2000, 1, 1))
+
+        party_user = User.objects.create_user(email='party_user@party_user.com',
+                                              username='party_username',
+                                              password='Password&1976',
+                                              date_of_birth=datetime.date(2000, 1, 1))
+
+        private_party = Party.objects.create(name='private_party name',
+                                             owner=party_user,
+                                             description='private_party description',
+                                             privacy_status=Party.PrivacyStatus.PRIVATE,
+                                             localization='POINT(12 12)',
+                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
+                                                                          minute=10,
+                                                                          tzinfo=timezone.utc),
+                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
+                                                                         tzinfo=timezone.utc))
+
+        party_request = PartyRequest.objects.create(party=private_party, sender=user)
+
+        data = {'email': user.email, 'password': 'Password&1976'}
+        jwt = self.client.post('/auth/token/', data, format='json').data['access']
+
+        response = self.client.delete(f'{self.URL}{private_party.public_id}/{party_request.pk}/',
+                                      HTTP_AUTHORIZATION=f'Bearer {jwt}', follow=True)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(PartyInvitation.objects.count(), 0)
+        self.assertFalse(user in private_party.participants.all())
