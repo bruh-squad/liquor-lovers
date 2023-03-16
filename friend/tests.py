@@ -39,9 +39,9 @@ class FriendTest(APITestCase):
 
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
 
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['public_id'], str(friend.public_id))
-        self.assertEqual(response.data[1]['public_id'], str(friend1.public_id))
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['public_id'], str(friend.public_id))
+        self.assertEqual(response.data['results'][1]['public_id'], str(friend1.public_id))
 
     def test_unfriend(self):
         url = '/friends/'
@@ -99,7 +99,7 @@ class InvitationTests(APITestCase):
 
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {receiver_jwt}')
 
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_from_me_invitations(self):
         url = '/friends/invitations/my/'
@@ -121,7 +121,7 @@ class InvitationTests(APITestCase):
 
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {sender_jwt}')
 
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_create_invitation(self):
         url = '/friends/invitations/'
@@ -163,9 +163,9 @@ class InvitationTests(APITestCase):
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {receiver_jwt}')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['sender']['public_id'], str(sender.public_id))
-        self.assertEqual(response.data[0]['receiver']['public_id'], str(receiver.public_id))
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['sender']['public_id'], str(sender.public_id))
+        self.assertEqual(response.data['results'][0]['receiver']['public_id'], str(receiver.public_id))
 
     def test_invitation_reject(self):
         url = '/friends/invitations/'
@@ -190,9 +190,9 @@ class InvitationTests(APITestCase):
 
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {receiver_jwt}')
 
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
-        response = self.client.delete(f'{url}{response.data[0]["id"]}/',
+        response = self.client.delete(f'{url}{response.data["results"][0]["id"]}/',
                                       format='json',
                                       HTTP_AUTHORIZATION=f'Bearer {receiver_jwt}')
 
@@ -223,9 +223,9 @@ class InvitationTests(APITestCase):
 
         response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {receiver_jwt}')
 
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
-        response = self.client.delete(f'{url}{response.data[0]["id"]}/',
+        response = self.client.delete(f'{url}{response.data["results"][0]["id"]}/',
                                       format='json',
                                       HTTP_AUTHORIZATION=f'Bearer {sender_jwt}')
 

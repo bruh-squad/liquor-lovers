@@ -22,7 +22,13 @@ class FriendViewSet(viewsets.ModelViewSet):
         """
         Retrieves the list of friends for the current user.
         """
-        queryset = request.user.friends_list.friends
+        queryset = self.filter_queryset(request.user.friends_list.friends.all())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -59,7 +65,13 @@ class InvitationViewSet(viewsets.ModelViewSet):
         """
         Retrieves the list of friend invitations for the current user.
         """
-        queryset = self.get_queryset().filter(receiver=request.user)
+        queryset = self.filter_queryset(self.get_queryset().filter(receiver=request.user))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -68,7 +80,13 @@ class InvitationViewSet(viewsets.ModelViewSet):
         """
         Retrieves the list of friend invitations sent by the current user.
         """
-        queryset = self.get_queryset().filter(sender=request.user)
+        queryset = self.filter_queryset(self.get_queryset().filter(sender=request.user))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

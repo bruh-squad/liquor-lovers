@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
@@ -14,6 +14,8 @@ User = get_user_model()
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'public_id'
     queryset = User.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'first_name', 'last_name']
 
     def create(self, request, *args, **kwargs):
         """
@@ -30,6 +32,12 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        if request.query_params.get('q') is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=['GET'])
     def retrieve_other(self, request, *args, **kwargs):

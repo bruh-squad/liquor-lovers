@@ -124,6 +124,47 @@ class UserTests(APITestCase):
         self.assertEqual(user.pfp.url, response.data['pfp'].replace('http://testserver', ''))
         self.assertEqual(str(user.date_of_birth), response.data['date_of_birth'])
 
+    def test_list(self):
+        user1 = User.objects.create_user(email='email@email.com',
+                                         username='username',
+                                         password='Password1234$!',
+                                         date_of_birth=datetime.date(2000, 1, 1))
+        user2 = User.objects.create_user(email='johnny@email.com',
+                                         username='johnny_star',
+                                         password='Password1234$!',
+                                         date_of_birth=datetime.date(2000, 1, 1))
+        user3 = User.objects.create_user(email='bob@email.com',
+                                         username='bobby_star',
+                                         password='Password1234$!',
+                                         date_of_birth=datetime.date(2000, 1, 1))
+        user4 = User.objects.create_user(email='alice@email.com',
+                                         username='alice',
+                                         password='Password1234$!',
+                                         date_of_birth=datetime.date(2000, 1, 1))
+
+        url = f'/users/search/'
+
+        jwt = self.client.post('/auth/token/',
+                               {'email': 'email@email.com', 'password': 'Password1234$!'},
+                               format='json').data['access']
+
+        response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, None)
+
+        url = f'/users/search/?q=alice'
+        response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['username'], user4.username)
+
+        url = f'/users/search/?q=tar'
+        response = self.client.get(url, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['username'], user2.username)
+        self.assertEqual(response.data['results'][1]['username'], user3.username)
+
     def test_destroy_user(self):
         User.objects.create_user(email='email@email.com',
                                  username='username',

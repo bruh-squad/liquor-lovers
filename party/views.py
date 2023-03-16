@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import Distance
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -13,7 +15,7 @@ User = get_user_model()
 
 class PartyViewSet(viewsets.ModelViewSet):
     lookup_field = 'public_id'
-    queryset = Party.objects.all()
+    queryset = Party.objects.all().order_by('id')
     serializer_class = PartySerializer
     permission_classes = [IsAuthenticated]
 
@@ -40,7 +42,13 @@ class PartyViewSet(viewsets.ModelViewSet):
         """
         Lists all the parties that a user can see.
         """
-        queryset = filter(lambda p: p.can_see_party(request.user), self.get_queryset())
+        queryset = list(filter(lambda p: p.can_see_party(request.user), self.filter_queryset(self.get_queryset())))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -49,7 +57,13 @@ class PartyViewSet(viewsets.ModelViewSet):
         """
         Lists all the parties that the user is owner of.
         """
-        queryset = request.user.parties_where_im_owner
+        queryset = self.filter_queryset(request.user.parties_where_im_owner.all())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -95,6 +109,20 @@ class PartyViewSet(viewsets.ModelViewSet):
         self.perform_destroy(party)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def filter_queryset(self, queryset):
+        party_range = self.request.query_params.get('range')
+        if party_range is not None:
+            point = self.request.headers.get('Point')
+            if point is None:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            location = GEOSGeometry(point)
+            queryset = queryset.filter(
+                location__distance_lt=(location, Distance(m=party_range))
+            )
+
+        return super().filter_queryset(queryset)
+
 
 class PartyInvitationViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
@@ -138,8 +166,15 @@ class PartyInvitationViewSet(viewsets.ModelViewSet):
         if request.user != party.owner:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        queryset = self.get_queryset().filter(party=party)
+        queryset = self.filter_queryset(self.get_queryset().filter(party=party))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
+
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
@@ -147,7 +182,13 @@ class PartyInvitationViewSet(viewsets.ModelViewSet):
         """
         Retrieves the list of party invitations for the current user.
         """
-        queryset = self.get_queryset().filter(receiver=request.user)
+        queryset = self.filter_queryset(self.get_queryset().filter(receiver=request.user))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -212,7 +253,13 @@ class PartyRequestViewSet(viewsets.ModelViewSet):
         if request.user != party.owner:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        queryset = self.get_queryset().filter(party=party)
+        queryset = self.filter_queryset(self.get_queryset().filter(party=party))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -221,7 +268,13 @@ class PartyRequestViewSet(viewsets.ModelViewSet):
         """
         Retrieves the list of party invitations for the current user.
         """
-        queryset = self.get_queryset().filter(sender=request.user)
+        queryset = self.filter_queryset(self.get_queryset().filter(sender=request.user))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

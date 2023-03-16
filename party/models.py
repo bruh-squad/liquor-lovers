@@ -22,7 +22,7 @@ class Party(models.Model):
     description = models.TextField(max_length=500)
     image = models.ImageField(upload_to=uuid_upload_to('parties'), default='defaults/parties/default.png')
     participants = models.ManyToManyField(User, related_name='parties')
-    localization = models.PointField(null=False, blank=False)
+    location = models.PointField(null=False, blank=False)
     start_time = models.DateTimeField()
     stop_time = models.DateTimeField()
 

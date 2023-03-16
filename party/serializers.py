@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 
+from LiquorLovers.utils import calculate_distance
 from user.serializers import FriendSerializer
 from .models import Party, PartyInvitation, PartyRequest
 
@@ -17,9 +19,11 @@ class PartySerializer(serializers.ModelSerializer):
     participants = FriendSerializer(many=True, read_only=True)
     privacy_status_display = serializers.CharField(source='get_privacy_status_display', read_only=True)
 
+    distance = serializers.SerializerMethodField()
+
     class Meta:
         model = Party
-        geo_field = 'localization'
+        geo_field = 'location'
         fields = ['public_id',
                   'owner',
                   'owner_public_id',
@@ -29,7 +33,8 @@ class PartySerializer(serializers.ModelSerializer):
                   'description',
                   'image',
                   'participants',
-                  'localization',
+                  'location',
+                  'distance',
                   'start_time',
                   'stop_time']
 
@@ -52,6 +57,14 @@ class PartySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(_('Stop time must occur after start time. '))
 
         return data
+
+    def get_distance(self, obj):
+        point = self.context['request'].headers.get('Point')
+        if point is None:
+            return 0
+
+        point_location = GEOSGeometry(point)
+        return int(calculate_distance(obj.location, point_location))
 
 
 class PartyInvitationSerializer(serializers.ModelSerializer):

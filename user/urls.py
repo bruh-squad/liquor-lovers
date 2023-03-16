@@ -9,5 +9,6 @@ urlpatterns = [
                                   'patch': 'partial_update',
                                   'delete': 'destroy'})),
 
+    path('search/', UserViewSet.as_view({'get': 'list'})),
     path('<uuid:public_id>/', UserViewSet.as_view({'get': 'retrieve_other'})),
 ]

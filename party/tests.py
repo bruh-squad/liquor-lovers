@@ -1,5 +1,4 @@
 import datetime
-import json
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -26,7 +25,7 @@ class PartyTest(APITestCase):
         data = {'name': 'party name',
                 'privacy_status': '1',
                 'description': 'description',
-                'localization': 'POINT(10 10)',
+                'location': 'POINT(10 10)',
                 'start_time': timezone.datetime(year=2023, month=1, day=1, hour=20, minute=30).isoformat(),
                 'stop_time': timezone.datetime(year=2023, month=1, day=2, hour=2, minute=30).isoformat()}
 
@@ -37,7 +36,7 @@ class PartyTest(APITestCase):
         self.assertEqual(response.data['privacy_status'], 1)
         self.assertEqual(response.data['privacy_status_display'], 'Private')
         self.assertEqual(response.data['description'], 'description')
-        self.assertEqual(response.data['localization'], 'SRID=4326;POINT (10 10)')
+        self.assertEqual(response.data['location'], 'SRID=4326;POINT (10 10)')
         self.assertEqual(response.data['start_time'], '2023-01-01T20:30:00Z')
         self.assertEqual(response.data['stop_time'], '2023-01-02T02:30:00Z')
         self.assertEqual(response.data['participants'][0]['public_id'], str(user.public_id))
@@ -57,7 +56,7 @@ class PartyTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -67,7 +66,7 @@ class PartyTest(APITestCase):
                                             owner=party_user,
                                             description='public_party description',
                                             privacy_status=Party.PrivacyStatus.PUBLIC,
-                                            localization='POINT(12 12)',
+                                            location='POINT(12 12)',
                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                          tzinfo=timezone.utc),
                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -77,7 +76,7 @@ class PartyTest(APITestCase):
                                             owner=party_user,
                                             description='secret_party description',
                                             privacy_status=Party.PrivacyStatus.SECRET,
-                                            localization='POINT(12 12)',
+                                            location='POINT(12 12)',
                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                          tzinfo=timezone.utc),
                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -88,24 +87,24 @@ class PartyTest(APITestCase):
 
         response = self.client.get(self.URL, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
 
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
         user.friends_list.add_friend(party_user)
 
         response = self.client.get(self.URL, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['results']), 2)
 
         data = {'email': party_user.email, 'password': 'Password&1976'}
         party_jwt = self.client.post('/auth/token/', data, format='json').data['access']
 
         response = self.client.get(self.URL, format='json', HTTP_AUTHORIZATION=f'Bearer {party_jwt}')
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data['results']), 3)
 
         response = self.client.get(f'{self.URL}mine/', format='json', HTTP_AUTHORIZATION=f'Bearer {party_jwt}')
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data['results']), 3)
 
         response = self.client.get(f'{self.URL}mine/', format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_retrieve_party(self):
         user = User.objects.create_user(email='user@user.com',
@@ -122,7 +121,7 @@ class PartyTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -132,7 +131,7 @@ class PartyTest(APITestCase):
                                             owner=party_user,
                                             description='public_party description',
                                             privacy_status=Party.PrivacyStatus.PUBLIC,
-                                            localization='POINT(12 12)',
+                                            location='POINT(12 12)',
                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                          tzinfo=timezone.utc),
                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -164,7 +163,7 @@ class PartyTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -174,7 +173,7 @@ class PartyTest(APITestCase):
                                      owner=user,
                                      description='public_party description',
                                      privacy_status=Party.PrivacyStatus.PUBLIC,
-                                     localization='POINT(12 12)',
+                                     location='POINT(12 12)',
                                      start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                   tzinfo=timezone.utc),
                                      stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -218,7 +217,7 @@ class PartyTest(APITestCase):
                                      owner=user,
                                      description='private_party description',
                                      privacy_status=Party.PrivacyStatus.PRIVATE,
-                                     localization='POINT(12 12)',
+                                     location='POINT(12 12)',
                                      start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                   tzinfo=timezone.utc),
                                      stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -228,7 +227,7 @@ class PartyTest(APITestCase):
                                             owner=party_user,
                                             description='public_party description',
                                             privacy_status=Party.PrivacyStatus.PUBLIC,
-                                            localization='POINT(12 12)',
+                                            location='POINT(12 12)',
                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                          tzinfo=timezone.utc),
                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -274,7 +273,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -315,7 +314,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -328,7 +327,7 @@ class PartyInvitationTest(APITestCase):
 
         response = self.client.get(self.URL, HTTP_AUTHORIZATION=f'Bearer {jwt}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_party_invitations(self):
         user = User.objects.create_user(email='user@user.com',
@@ -345,7 +344,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -364,7 +363,7 @@ class PartyInvitationTest(APITestCase):
 
         response = self.client.get(f'{self.URL}{private_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_accept_invitation(self):
         user = User.objects.create_user(email='user@user.com',
@@ -381,7 +380,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -414,7 +413,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
                                                                           minute=10,
                                                                           tzinfo=timezone.utc),
@@ -448,7 +447,7 @@ class PartyInvitationTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
                                                                           minute=10,
                                                                           tzinfo=timezone.utc),
@@ -486,7 +485,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -495,7 +494,7 @@ class PartyRequestTest(APITestCase):
                                             owner=party_user,
                                             description='private_party description',
                                             privacy_status=Party.PrivacyStatus.PUBLIC,
-                                            localization='POINT(12 12)',
+                                            location='POINT(12 12)',
                                             start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                          tzinfo=timezone.utc),
                                             stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -529,7 +528,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -542,7 +541,7 @@ class PartyRequestTest(APITestCase):
 
         response = self.client.get(self.URL, HTTP_AUTHORIZATION=f'Bearer {jwt}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_party_request(self):
         user = User.objects.create_user(email='user@user.com',
@@ -559,7 +558,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -578,7 +577,7 @@ class PartyRequestTest(APITestCase):
 
         response = self.client.get(f'{self.URL}{private_party.public_id}/', HTTP_AUTHORIZATION=f'Bearer {jwt}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_accept_request(self):
         user = User.objects.create_user(email='user@user.com',
@@ -595,7 +594,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22, minute=10,
                                                                           tzinfo=timezone.utc),
                                              stop_time=timezone.datetime(day=2, month=1, year=1, hour=4, minute=0,
@@ -628,7 +627,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
                                                                           minute=10,
                                                                           tzinfo=timezone.utc),
@@ -662,7 +661,7 @@ class PartyRequestTest(APITestCase):
                                              owner=party_user,
                                              description='private_party description',
                                              privacy_status=Party.PrivacyStatus.PRIVATE,
-                                             localization='POINT(12 12)',
+                                             location='POINT(12 12)',
                                              start_time=timezone.datetime(day=1, month=1, year=1, hour=22,
                                                                           minute=10,
                                                                           tzinfo=timezone.utc),
