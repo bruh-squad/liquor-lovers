@@ -1,9 +1,11 @@
+from math import floor
+
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.translation import gettext as _
+from geopy.distance import distance
 from rest_framework import serializers
 
-from LiquorLovers.utils import calculate_distance
 from user.serializers import FriendSerializer
 from .models import Party, PartyInvitation, PartyRequest
 
@@ -64,7 +66,7 @@ class PartySerializer(serializers.ModelSerializer):
             return 0
 
         point_location = GEOSGeometry(point)
-        return int(calculate_distance(obj.location, point_location))
+        return floor(distance(obj.location, point_location).meters)
 
 
 class PartyInvitationSerializer(serializers.ModelSerializer):

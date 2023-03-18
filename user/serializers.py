@@ -45,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         try:
             return User.objects.create_user(**validated_data)
         except ValueError as e:
-            raise serializers.ValidationError(e)
+            raise serializers.ValidationError(str(e))
 
     def update(self, instance, validated_data):
         if validated_data.get('password') is not None:
