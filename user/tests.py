@@ -85,6 +85,7 @@ class UserTests(APITestCase):
                                format='json').data['access']
 
         response = self.client.patch(url, data, format='json', HTTP_AUTHORIZATION=f'Bearer {jwt}')
+        self.assertEqual(response.data['username'], 'username')
         self.assertEqual(User.objects.get(email='email@email.com').username, 'username')
 
         data = {'date_of_birth': '2001-01-01'}

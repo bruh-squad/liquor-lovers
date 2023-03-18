@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +18,8 @@ class PartyViewSet(viewsets.ModelViewSet):
     queryset = Party.objects.all().order_by('id')
     serializer_class = PartySerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'first_name', 'last_name']
 
     def create(self, request, *args, **kwargs):
         """

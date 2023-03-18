@@ -7,6 +7,7 @@ RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get -y install python-gdal
 RUN pip install -r requirements.txt
+RUN python3 /LiquorLovers/manage.py migrate
 
 EXPOSE 8000
 
