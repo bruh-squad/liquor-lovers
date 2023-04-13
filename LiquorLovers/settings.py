@@ -96,6 +96,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=15) if DEBUG else timedelta(minutes=15),
+    'USER_ID_FIELD': 'public_id'
 }
 
 ROOT_URLCONF = 'LiquorLovers.urls'
