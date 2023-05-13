@@ -1,13 +1,14 @@
-FROM python:3.8.10
+FROM debian:stable-slim
 
 WORKDIR /LiquorLovers
 COPY . .
 
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install python-gdal
+RUN apt-get -y install python3 python3-pip gdal-bin gettext
 RUN pip install -r requirements.txt
 RUN python3 /LiquorLovers/manage.py migrate
+RUN python3 /LiquorLovers/manage.py compilemessages
 
 EXPOSE 8000
 
