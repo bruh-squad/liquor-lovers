@@ -6,6 +6,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 
 from .serializers import PartySerializer, PartyInvitationSerializer, PartyRequestSerializer
 from .models import Party, PartyInvitation, PartyRequest
@@ -116,7 +117,7 @@ class PartyViewSet(viewsets.ModelViewSet):
         if party_range is not None:
             point = self.request.headers.get('Point')
             if point is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                raise ValidationError({"msg": "Point header is missing."})
 
             location = GEOSGeometry(point)
             queryset = queryset.filter(
