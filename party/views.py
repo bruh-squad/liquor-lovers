@@ -60,7 +60,7 @@ class PartyViewSet(viewsets.ModelViewSet):
         """
         Lists all the parties that a user is a participant of.
         """
-        queryset = list(filter(lambda p: request.user in p.participants, self.filter_queryset(self.get_queryset())))
+        queryset = list(filter(lambda p: request.user in p.participants.all(), self.filter_queryset(self.get_queryset())))
 
         page = self.paginate_queryset(queryset)
         if page is not None:
