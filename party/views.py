@@ -56,6 +56,21 @@ class PartyViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=['GET'], detail=False)
+    def list_participant(self, request, *args, **kwargs):
+        """
+        Lists all the parties that a user is a participant of.
+        """
+        queryset = list(filter(lambda p: request.user in p.participants, self.filter_queryset(self.get_queryset())))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['GET'], detail=False)
     def list_mine(self, request, *args, **kwargs):
         """
         Lists all the parties that the user is owner of.

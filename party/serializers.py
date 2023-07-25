@@ -82,7 +82,7 @@ class PartyInvitationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartyInvitation
-        fields = ['party', 'party_public_id', 'receiver', 'receiver_public_id', 'created_at']
+        fields = ['id', 'party', 'party_public_id', 'receiver', 'receiver_public_id', 'created_at']
 
     def validate(self, attrs):
         if attrs['receiver'] in attrs['party'].participants.all():
@@ -104,7 +104,7 @@ class PartyRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PartyRequest
-        fields = ['party', 'party_public_id', 'sender', 'sender_public_id', 'created_at']
+        fields = ['id', 'party', 'party_public_id', 'sender', 'sender_public_id', 'created_at']
 
     def validate(self, attrs):
         if attrs['sender'] in attrs['party'].participants.all():
